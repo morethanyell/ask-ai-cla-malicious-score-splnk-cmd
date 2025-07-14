@@ -60,3 +60,6 @@ This app comes with an authorize.conf that defines a role called "can_run_claais
 | claaiscore textfield=process api_name=my-api-key-with-valid-credit-0001
 | table _time, user, process, ai_mal_score__process
 ```
+
+### Beers
+If you think this helps your organization and you're feeling a bit generous today, I'm happy to accept funds for my IPA beer, paypal: daniel.l.astillero@gmail.com
