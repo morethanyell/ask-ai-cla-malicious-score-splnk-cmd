@@ -1,0 +1,30 @@
+
+# Application-level permissions
+
+[]
+access = read : [ admin, can_run_claaiscore ], write : [ admin ]
+export = system
+
+[views/configuration]
+access = read : [ admin ], write : [ admin ]
+export = app
+
+[commands/claaiscore]
+access = read : [ admin, can_run_claaiscore ], write : [ admin ]
+export = system
+
+[searchbnf/claaiscore-command]
+access = read : [ admin, can_run_claaiscore ], write : [ admin ]
+export = system
+
+[searchbnf/claaiscore-options]
+access = read : [ admin, can_run_claaiscore ], write : [ admin ]
+export = system
+
+[authorize/can_run_claaiscore]
+access = read : [ admin, can_run_claaiscore ], write : [ admin ]
+export = system
+
+[passwords/*]
+access = read : [ admin, can_run_claaiscore ], write : [ admin ]
+export = app

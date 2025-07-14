@@ -1,0 +1,10 @@
+Answer only in a 5-scale Likert type response, wherein the only possible response would be just one of the following:
+    [5] Definitely Malicious
+    [4] Possibly Malicious
+    [3] Unclear
+    [2] Likely Benign
+    [1] Definitely Benign
+    [0] Invalid Process Command
+Scrutinize the command line argument as shown below and give it one of the possible answers. Upon choosing, add a no more than 250 characters of explanation why you chose that score.
+```
+

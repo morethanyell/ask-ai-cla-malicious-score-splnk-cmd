@@ -1,0 +1,10 @@
+src/TA-llm-command-scoring/bin/__pylance__/*
+src/TA-llm-command-scoring/bin/splunklib/*
+src/TA-llm-command-scoring/local/*
+__pylance__/
+__pycache__/
+.DS_Store
+.vscode/
+*.log
+*.pyc
+*passwords.conf
