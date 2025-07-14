@@ -7,7 +7,7 @@ import hashlib
 class GPTClient:
     
     PP_INTEGRITY = 'afbfd42ca1e939498c481d7f38fa572d609e1131ddaaca5939b4151cc2b50974'
-    PP_FNAME = 'PP000001_20250714'
+    PP_FNAME = 'PP000001_20250714.txt'
     
     def __init__(self, api_key, url, temperature=0, model="gpt-4o"):
         self.api_key = api_key
