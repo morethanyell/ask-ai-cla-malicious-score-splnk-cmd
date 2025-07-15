@@ -46,19 +46,21 @@ This app comes with an authorize.conf that defines a role called "can_run_claais
 
 ```spl
 | your_search_here 
-| claaiscore textfield=process api_name=my-openai-key output_field=ai_score
+| claaiscore textfield=process api_name=my-openai-key
 ```
 
 ### Other optional params
-- api_url — OpenAI's current working API URL
-- temperature — A number ranging from 0.0 to 1.9. Temperature controls the randomness or creativity of the model's responses.
+- api_url — OpenAI's current working API URL (Defaults to https://api.openai.com/v1/chat/completions)
+- temperature — A number ranging from 0.0 to 1.9. Temperature controls the randomness or creativity of the model's responses. (Defaults to 0.0)
+- output_field — Give a field name to the AI's reponse (Defaults to `ai_mal_score__<name of the input textfied>`)
 
 ### Example search
 ```spl
 | tstats max(_time) as _time from datamodel=Endpoint.Processes where Processes.process_name="cmd.exe" by Process.user Process.process
 | rename Process.* as *
 | claaiscore textfield=process api_name=my-api-key-with-valid-credit-0001
-| table _time, user, process, ai_mal_score__process
+| fields _time user process ai_mal_score__process
+| where match(ai_mal_score__process, "\[[45]\].+Malicious")
 ```
 
 ### Beers
