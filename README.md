@@ -1,18 +1,20 @@
 # 🧠 TA-llm-command-scoring
 
-TA-llm-command-scoring is a Splunk Technology Add-on that houses a custom Splunk command. It queries OpenAI's GPT to assess whether a process' command-line argument (CLA) appears malicious. 
+TA-llm-command-scoring is a Splunk Technology Add-on that provides a custom streaming command designed specifically for evaluating command-line arguments (CLAs) from process events. It leverages large language models to assess the likelihood that a given CLA is malicious, assigning a simple, interpretable score.
 
-This Splunk custom command accepts a field that contains a valid Command Line Argument, e.g.: `powershell.exe -nop -w hidden -enc aAB0AHQAcAA6AC8ALwAxADAAMAAuADEAMAAwAC4AMQAwADAALwBtAGEAbAB3AGEAcgBlAC4AZQB4AGUA`
+This add-on isn’t a general-purpose AI chatbot or prompt interface. It doesn’t aim to replace Splunk’s | ai prompt=<prompt> command from MLTK v5.6. Instead, it's a purpose-built, lightweight assistant focused solely on scrutinizing CLAs—a specialized tool to help SOC analysts cut through noise and surface risky executions fast.
 
-The command will ask ChatGPT to scrutinize the command and will respond with a Likert-type score:
+The custom command accepts a field that contains a valid Command Line Argument, e.g.: `powershell.exe -nop -w hidden -enc aAB0AHQAcAA6AC8ALwAxADAAMAAuADEAMAAwAC4AMQAwADAALwBtAGEAbAB3AGEAcgBlAC4AZQB4AGUA`
 
-- [5] Definitely Malicious 
-- [4] Possibly Malicious
-- [3] Unclear 
-- [2] Likely Benign 
-- [1] Definitely Benign 
-- [0] Invalid Process Command 
-
+It will ask the chosen AI model to scrutinize the command and will respond with a Likert-type score:
+```
+[5] Definitely Malicious 
+[4] Possibly Malicious
+[3] Unclear 
+[2] Likely Benign 
+[1] Definitely Benign 
+[0] Invalid Process Command 
+```
 and a short explanation of why it chose that score. It integrates directly into Splunk searches via a custom streaming command and leverages LLMs' ability to read between the lines — at scale, without fatigue.
 
 ---
@@ -62,6 +64,9 @@ This app comes with an authorize.conf that defines a role called "can_run_claais
 | fields _time user process ai_mal_score__process
 | where match(ai_mal_score__process, "\[[45]\].+Malicious")
 ```
+
+### TO-DO
+- Make the custom command multi-model
 
 ### Beers
 If you think this helps your organization and you're feeling a bit generous today, I'm happy to accept funds for my IPA beer, paypal: daniel.l.astillero@gmail.com

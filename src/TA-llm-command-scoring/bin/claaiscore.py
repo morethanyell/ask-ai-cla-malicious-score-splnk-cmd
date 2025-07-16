@@ -3,7 +3,7 @@
 import sys
 import re
 from splunklib.searchcommands import dispatch, StreamingCommand, Configuration, Option, validators
-from gpt_client import GPTClient
+from client_openai import OpenAIGPTClient
 
 @Configuration()
 class CLAAiScore(StreamingCommand):
@@ -92,7 +92,7 @@ class CLAAiScore(StreamingCommand):
                 yield r
                 continue
             
-            soc_assistant = GPTClient(
+            soc_assistant = OpenAIGPTClient(
                 api_key=fs_clearpwd,
                 url=self.api_url,
                 temperature=float(llm_temp),

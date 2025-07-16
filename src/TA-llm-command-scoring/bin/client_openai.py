@@ -4,7 +4,7 @@ import requests
 import os
 import hashlib
 
-class GPTClient:
+class OpenAIGPTClient:
     
     PP_INTEGRITY = 'afbfd42ca1e939498c481d7f38fa572d609e1131ddaaca5939b4151cc2b50974'
     PP_FNAME = 'PP000001_20250714.txt'
@@ -70,6 +70,6 @@ class GPTClient:
                 retval = False, f"POST {self.url} returned an ERROR: status_code={response.status_code}, err_details={response.text}"
             
         except requests.RequestException as e:
-            return False, f"POST {self.url} returned an ERROR: {e}"       
+            retval = False, f"POST {self.url} returned an ERROR: {e}"       
         
         return retval
