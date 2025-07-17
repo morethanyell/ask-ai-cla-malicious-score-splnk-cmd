@@ -22,18 +22,42 @@ require([
         modal.style.display = 'block';
     }
 
-    delSelBut.onclick = function () {
-        const checkedBoxes = document.querySelectorAll('#llm-creds-table .row-checkbox:checked');
+    delSelBut.onclick = async function () {
 
+        const checkedBoxes = document.querySelectorAll('#llm-creds-table .row-checkbox:checked');
         if (checkedBoxes.length === 0) {
             alert("No rows selected.");
             return;
         }
 
-        checkedBoxes.forEach(checkbox => {
+        const count = checkedBoxes.length;
+        const confirmed = confirm(`Are you sure you want to delete ${count} credential${count > 1 ? 's' : ''}?`);
+
+        if (!confirmed) return;
+
+        const service = getSplunkService();
+
+        for (const checkbox of checkedBoxes) {
+
             const row = checkbox.closest('tr');
-            row.remove(); // or call delete logic
-        });
+            const stanza = row.cells[0].textContent.trim();
+
+            const passKey = `${appName}:${stanza}:`;
+
+            console.log(`Deleting: ${passKey} data. From value: ${passKey}`);
+
+            const passwords = service.storagePasswords({ app: appName });
+            await passwords.fetch();
+            const existingPw = passwords.item(passKey);
+
+            if (!existingPw) { continue; }
+
+            existingPw.del();
+            row.remove();
+            redirectToApp();
+
+        }
+
     }
 
     closeButton.onclick = function () {
@@ -57,9 +81,7 @@ require([
 
         try {
 
-            const http = new splunkjs.SplunkWebHttp();
-            const service = new splunkjs.Service(http, appNamespace);
-
+            const service = getSplunkService();
             const passwords = service.storagePasswords({ app: appName });
             await passwords.fetch();
 
@@ -148,11 +170,7 @@ require([
 
         try {
 
-            const http = new splunkjs.SplunkWebHttp();
-            const service = new splunkjs.Service(
-                http,
-                appNamespace,
-            );
+            const service = getSplunkService();
 
             const configCollection = service.configurations(appNamespace);
             await configCollection.fetch();
@@ -219,6 +237,11 @@ require([
 
     }
 
+    function getSplunkService(namespace = appNamespace) {
+        const http = new splunkjs.SplunkWebHttp();
+        return new splunkjs.Service(http, namespace);
+    }
+
     async function setIsConfigured(installStanza, val) {
         await installStanza.update({
             is_configured: val
@@ -237,7 +260,7 @@ require([
     function redirectToApp(waitMs) {
         setTimeout(() => {
             window.location.href = `/app/${appName}`;
-        }, 800);
+        }, 500);
     }
 
     function isTrue(v) {
