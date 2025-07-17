@@ -4,10 +4,6 @@
 	font-family: sans-serif;
 }
 
-#llm-creds-table {
-	padding-top: ;
-}
-
 .text {
 	display: flex;
 	align-items: center;
@@ -141,7 +137,6 @@ th {
 .form-group input[type="text"],
 .form-group input[type="password"] {
 	width: calc(100% - 20px);
-	/* Account for padding */
 	padding: 10px;
 	border: 1px solid #ccc;
 	border-radius: 4px;

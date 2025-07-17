@@ -7,7 +7,6 @@ const appNamespace = {
     sharing: "global",
 };
 
-// Splunk Web Framework Provided files
 require([
     "jquery", "splunkjs/splunk",
 ], function ($, splunkjs) {
@@ -43,6 +42,7 @@ require([
     $(document).ready(async function () {
 
         try {
+
             const http = new splunkjs.SplunkWebHttp();
             const service = new splunkjs.Service(http, appNamespace);
 
@@ -51,45 +51,75 @@ require([
 
             const list = passwords.list();
 
-            list.forEach(pw => {
+            for (const pw of list) {
 
-                const credName = pw.name;
-                const credNameClean = credName.match(/.+\:(.+)\:/)[1]
-                const credClearText = JSON.parse(pw.)
-                const credLlmProv = credClearText.credLlmProv;
-                const credModel = credClearText.credModel;
-                const credApiKey = credClearText.credApiKey;
+                pwData = pw._properties;
+
+                const credName = pwData.username;
+                let credClearText = null;
+
+                if (typeof pwData.clear_password === "string") {
+                    try {
+                        credClearText = JSON.parse(pwData.clear_password);
+                    } catch (_) { }
+                }
+
+                if (!credClearText) continue;
+
+                const credDesc = credClearText.credDesc ?? "n/a";
+                const credLlmProv = credClearText.credLlmProv ?? "n/a";
+                const credModel = credClearText.credModel ?? "n/a";
+                const credApiKey = credClearText.credApiKey ?? "n/a";
+                const credApiKeyMasked = (credApiKey.slice(0, 3) + "*".repeat(7)) ?? "n/a";
 
                 const row = `
                     <tr>
-                        <td>${credNameClean}</td>
+                        <td>${credName}</td>
+                        <td>${credDesc}</td>
                         <td>${credLlmProv}</td>
                         <td>${credModel}</td>
-                        <td>${credApiKey}</td>
+                        <td>${credApiKeyMasked}</td>
                         <td class="action-cell"><span class="ellipsis">&#8942;</span></td>
                     </tr>
                 `;
 
                 $('#llm-creds-table').append(row);
 
-            });
+            }
 
         } catch (err) {
             console.error("Error fetching passwords:", err);
         }
-    })
+    });
 
     // Handle form submission
     addCredForm.onsubmit = async function (event) {
+
         event.preventDefault();
 
         const credName = document.getElementById('credNameId').value;
         const credNameClean = credName.trim().replace(/\s+/g, '-').toLowerCase();
+        const credDesc = document.getElementById('credDescriptionId').value;
         const credLlmProv = document.getElementById('credLlmProviderId').value;
         const credModel = document.getElementById('credModelId').value;
         const credApiKey = document.getElementById('credApiSecretId').value;
+
+        const fields = {
+            credName: "API Name",
+            credLlmProv: "API LLM Provider",
+            credApiKey: "API Key"
+        };
+
+        for (const [key, value] of Object.entries(fields)) {
+            if (!eval(key)) {
+                alert(`${value} can't be empty`);
+                throw new Error(`${value} is empty!`);
+            }
+        }
+
         const credPwToSave = {
             credNameClean: credNameClean,
+            credDesc: credDesc,
             credLlmProv: credLlmProv,
             credModel: credModel,
             credApiKey, credApiKey
@@ -138,10 +168,6 @@ require([
 
             } if (!existingPw) {
 
-                if (!credName) {
-                    throw new Error('API key is empty!');
-                }
-
                 passwords.create(
                     {
                         name: credNameClean,
@@ -167,8 +193,9 @@ require([
             $('#error_details').html(errText);
         }
 
-        modal.style.display = 'none'; // Close the modal after submission
-        addCredForm.reset(); // Reset the form after submission
+        modal.style.display = 'none';
+        addCredForm.reset();
+
     }
 
     async function setIsConfigured(installStanza, val) {
@@ -202,4 +229,5 @@ require([
         }
         return false;
     }
+
 });
