@@ -16,6 +16,7 @@
             <div class="api-key-container">
               <div class="button-group">
                 <button id="addNewBut">Add New LLM Provider</button>
+                <button id="delSelectedBut">Delete Selected</button>
               </div>
             </div>
             <div class="tbl-group">
@@ -27,7 +28,7 @@
                     <th>LLM Provider</th>
                     <th>Model</th>
                     <th>API Key</th>
-                    <th>Action</th>
+                    <th>Select</th>
                   </tr>
                 </thead>
                 <tbody>

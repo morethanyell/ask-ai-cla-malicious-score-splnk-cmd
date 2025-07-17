@@ -13,12 +13,27 @@ require([
 
     const modal = document.getElementById('myModal');
     const addNewBut = document.getElementById('addNewBut');
+    const delSelBut = document.getElementById('delSelectedBut');
     const closeButton = document.querySelector('.close-button');
     const cancelButton = document.getElementById('cancelButton');
     const addCredForm = document.getElementById('addCredForm');
 
     addNewBut.onclick = function () {
         modal.style.display = 'block';
+    }
+
+    delSelBut.onclick = function () {
+        const checkedBoxes = document.querySelectorAll('#llm-creds-table .row-checkbox:checked');
+
+        if (checkedBoxes.length === 0) {
+            alert("No rows selected.");
+            return;
+        }
+
+        checkedBoxes.forEach(checkbox => {
+            const row = checkbox.closest('tr');
+            row.remove(); // or call delete logic
+        });
     }
 
     closeButton.onclick = function () {
@@ -29,7 +44,6 @@ require([
     cancelButton.onclick = function () {
         modal.style.display = 'none';
         addCredForm.reset();
-        console.log('Pop-up cancelled.');
     }
 
     window.onclick = function (event) {
@@ -79,7 +93,9 @@ require([
                         <td>${credLlmProv}</td>
                         <td>${credModel}</td>
                         <td>${credApiKeyMasked}</td>
-                        <td class="action-cell"><span class="ellipsis">&#8942;</span></td>
+                        <td class="action-cell">
+                            <input type="checkbox" class="row-checkbox" />
+                        </td>
                     </tr>
                 `;
 
@@ -115,6 +131,11 @@ require([
                 alert(`${value} can't be empty`);
                 throw new Error(`${value} is empty!`);
             }
+        }
+
+        if (credApiKey.length < 6) {
+            alert(`The length of the API Key is too short. Please double-check.`);
+            throw new Error(`API Key too short.`);
         }
 
         const credPwToSave = {
