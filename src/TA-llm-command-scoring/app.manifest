@@ -1,7 +1,7 @@
 {
   "schemaVersion": "2.0.0",
   "info": {
-    "title": "LLM Command Scoring",
+    "title": "LLM Command-line Arg Malicious Score",
     "id": {
       "group": null,
       "name": "TA-llm-command-scoring",

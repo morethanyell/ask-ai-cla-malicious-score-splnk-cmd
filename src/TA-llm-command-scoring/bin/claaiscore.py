@@ -7,8 +7,6 @@ from client_openai import OpenAIGPTClient
 
 @Configuration()
 class CLAAiScore(StreamingCommand):
-    
-    REALM = 'TA-llm-command-scoring'
 
     textfield = Option(
         doc='''
@@ -26,7 +24,7 @@ class CLAAiScore(StreamingCommand):
         doc='''
         **Syntax:** **api_url=***<string>*
         **Description:** The URL where the LLM's API reside. Defaults to OpenAI Chat Completions.''',
-        require=False, default='https://api.openai.com/v1/chat/completions')
+        require=False)
     
     model = Option(
         doc='''
