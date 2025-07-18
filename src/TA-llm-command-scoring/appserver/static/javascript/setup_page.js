@@ -217,7 +217,7 @@ require([
             } else {
                 existingPw.update(
                     {
-                        password: credApiKey,
+                        password: JSON.stringify(credPwToSave),
                     }, passwordCallback)
             }
 
