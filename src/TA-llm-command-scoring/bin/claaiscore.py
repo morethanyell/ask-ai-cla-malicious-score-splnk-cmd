@@ -2,13 +2,13 @@
 
 import sys
 import re
+import json
 from splunklib.searchcommands import dispatch, StreamingCommand, Configuration, Option, validators
-from gpt_client import GPTClient
+from client_openai import OpenAIGPTClient
+from client_google import GoogleGeminiClient
 
 @Configuration()
 class CLAAiScore(StreamingCommand):
-    
-    REALM = 'TA-llm-command-scoring'
 
     textfield = Option(
         doc='''
@@ -26,13 +26,13 @@ class CLAAiScore(StreamingCommand):
         doc='''
         **Syntax:** **api_url=***<string>*
         **Description:** The URL where the LLM's API reside. Defaults to OpenAI Chat Completions.''',
-        require=False, default='https://api.openai.com/v1/chat/completions')
+        require=False)
     
     model = Option(
         doc='''
         **Syntax:** **model=***<string>*
         **Description:** Select the OpenAI LLModel, e.g.: gpt-4o. Defaults to gpt-4o''',
-        require=False, default='gpt-4o')
+        require=False)
     
     temperature = Option(
         doc='''
@@ -51,10 +51,33 @@ class CLAAiScore(StreamingCommand):
             return float(val)
         except (ValueError, TypeError):
             return None
+    
+    def llm_provider(self, llm_provider, llm_api_key, llm_api_url, llm_model, llm_temp=0.7):
+        
+        llm = None
+        
+        if llm_provider == 'openai':
+
+            llm = OpenAIGPTClient(
+                            api_key=llm_api_key,
+                            url=llm_api_url,
+                            temperature=llm_temp,
+                            model=llm_model
+                        )
+        elif llm_provider == 'google':
+            
+            llm = GoogleGeminiClient(
+                            api_key=llm_api_key,
+                            url=llm_api_url,
+                            model=llm_model
+                        )
+            
+        return llm
 
     def stream(self, records):
         
         no_result = f"Did not find any API Key that matches: {self.api_name}"
+        err_m = 'err_msg'
         api_name = re.sub(r'\s+', '-', self.api_name.strip())
         secrets = self.service.storage_passwords
         fs_clearpwd = None
@@ -62,14 +85,14 @@ class CLAAiScore(StreamingCommand):
         for r in records:
             
             if self.textfield not in r:
-                r['err_msg'] = f"No field such as '{self.textfield}' exists in this event."
+                r[err_m] = f"No field such as '{self.textfield}' exists in this event."
                 yield r
                 continue
             
             found_secrets = secrets.list(search=api_name)
             
             if len(found_secrets) < 0:
-                r['err_msg'] = no_result
+                r[err_m] = no_result
                 yield r
                 continue
             
@@ -82,28 +105,31 @@ class CLAAiScore(StreamingCommand):
                     break
             
             if fs_clearpwd is None or fs_clearpwd == '':
-                r['err_msg'] = no_result
+                r[err_m] = no_result
                 yield r
                 continue
             
             llm_temp = self.safe_float(self.temperature)
-            if llm_temp is None:
-                r['err_msg'] = "Invalid temperature paramter. Must be a number from 0 to 1.9"
+            if llm_temp is None or not (0 <= llm_temp <= 1.9):
+                r[err_m] = "Invalid temperature parameter. Must be a number from 0 to 1.9"
                 yield r
                 continue
             
-            soc_assistant = GPTClient(
-                api_key=fs_clearpwd,
-                url=self.api_url,
-                temperature=float(llm_temp),
-                model=self.model
-            )
-            
-            del fs_clearpwd
-            
+            fs_param = json.loads(fs_clearpwd)
+            fs_param_llm_provider = fs_param.get('credLlmProv')
+            fs_param_llm_api_key = fs_param.get('credApiKey')
+            fs_param_llm_api_model = fs_param.get('credModel') or self.model
             cla_payload = r[self.textfield]
-            no_err, response = soc_assistant.ask(prompt=cla_payload)
-            outf = f'{self.output_field}__{self.textfield}' if no_err else 'err_msg'
+            
+            llm = self.llm_provider(llm_provider=fs_param_llm_provider, llm_api_key=fs_param_llm_api_key, llm_api_url=self.api_url, llm_model=fs_param_llm_api_model, llm_temp=llm_temp)
+            
+            if llm is None:
+                r[err_m] = "The custom command `claaiscore` failed to generate an LLM Provider instance. Please contact the author of the app."
+                yield r
+                continue
+            
+            no_err, response = llm.ask(prompt=cla_payload)
+            outf = f'{self.output_field}__by{fs_param_llm_provider}__{self.textfield}' if no_err else err_m
             r[outf] = response
             
             yield r

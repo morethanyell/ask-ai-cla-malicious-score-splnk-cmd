@@ -1,37 +1,84 @@
-<dashboard isDashboard="false" script="javascript/setup_page.js" stylesheet='styles/setup_page.css' hideTitle="true"
-  version="1.1">
+<dashboard isDashboard="false" script="javascript/setup_page.js" stylesheet="styles/setup_page.css"
+  hideTitle="true" version="1.1">
   <label>Configuration</label>
   <row>
     <panel>
-      <title>OpenAI Platforms Secret Key Page</title>
       <html>
-      <h3>Retrieve your API Key <a href="https://platform.openai.com/settings/organization/api-keys"
-          target="_blank">here</a></h3>
-      <div id="main_container">
-        <div>
-          <h2>API Keys Visible to you:</h2>
-          <hr/>
-          <ul id="password-list" style="margin-left: 1em; list-style-type: disc;"></ul>
-          <hr/>
-        </div>
-        <div>
-          <h2>Create new API Key</h2>
-          <hr/>
-          <div class="text">
-            <span>API Key Name</span>
-            <input type="text" id="api_name_input" />
+        <h1>Add LLM Providers and Secret Keys</h1>
+      </html>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <html>
+        <div id="main_container">
+          <div>
+            <div class="api-key-container">
+              <div class="button-group">
+                <button id="addNewBut">Add New LLM Provider</button>
+                <button id="delSelectedBut">Delete Selected</button>
+              </div>
+            </div>
+            <div class="tbl-group">
+              <table id="llm-creds-table">
+                <thead>
+                  <tr>
+                    <th>Name</th>
+                    <th>Description</th>
+                    <th>LLM Provider</th>
+                    <th>Model</th>
+                    <th>API Key</th>
+                    <th class="centered-header">Select</th>
+                  </tr>
+                </thead>
+                <tbody>
+                </tbody>
+              </table>
+            </div>
           </div>
-          <div class="text">
-            <span>API (Secret) Key</span>
-            <input type="password" id="api_key_input" />
-          </div>
-          <hr/>
-          <button id="save_api_button">Save or Update (by using the same API Name)</button>
-          <div class="success">API Key saved successfully, redirecting to app...</div>
-          <div class="error">Issue encountered while saving the API key, details below:</div>
-          <code id="error_details"></code>
         </div>
-      </div>
+      </html>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <html>
+        <div id="myModal" class="modal">
+          <div class="modal-content">
+            <span class="close-button"></span>
+            <h1>Add New LLM Provider</h1>
+            <hr />
+            <form id="addCredForm">
+              <div class="form-group">
+                <label for="credNameId">Name</label>
+                <input type="text" id="credNameId" name="credNameName" />
+              </div>
+              <div class="form-group">
+                <label for="credDescriptionId">Description</label>
+                <input type="text" id="credDescriptionId" name="credDescriptionName" />
+              </div>
+              <div class="form-group">
+                <label for="credLlmProviderId">Choose Provider</label>
+                <select id="credLlmProviderId" name="credLlmProviderName">
+                  <option value="openai">OpenAI GPT</option>
+                  <option value="google">Google Gemini</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="credModelId">Model</label>
+                <input type="text" id="credModelId" name="credModelName" />
+              </div>
+              <div class="form-group">
+                <label for="credApiSecretId">API (Secret) Key</label>
+                <input type="password" id="credApiSecretId" name="credApiSecretName" />
+              </div>
+              <div class="button-group">
+                <button type="button" id="cancelButton">Cancel</button>
+                <button type="submit" id="submitButton">Submit</button>
+              </div>
+            </form>
+          </div>
+        </div>
       </html>
     </panel>
   </row>
