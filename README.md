@@ -40,7 +40,7 @@ and a short explanation of why it chose that score. It integrates directly into 
 
 ## 🔐 API Key Setup
 
-#### Button [ Add New LLM Provider ] (actuall add new API credential)
+#### Button [ Add New LLM Provider ] (actually add new API credential)
 - On first launch, a Splunk user with Admin role will be redirected to the setup page.
     - ⚠️ Note: Users without the Admin role cannot set up an API key or view the Configuration page.
 
