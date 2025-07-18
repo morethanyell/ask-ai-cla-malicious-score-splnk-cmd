@@ -47,6 +47,10 @@ th {
 	background-color: #f4f4f4;
 }
 
+.centered-header {
+  text-align: center;
+}
+
 .action-cell {
 	font-family: Splunk Platform Sans, Proxima Nova, Roboto, Droid, Helvetica Neue, Helvetica, Arial, sans-serif;
 	text-align: center;

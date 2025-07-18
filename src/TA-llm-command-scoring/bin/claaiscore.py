@@ -32,7 +32,7 @@ class CLAAiScore(StreamingCommand):
         doc='''
         **Syntax:** **model=***<string>*
         **Description:** Select the OpenAI LLModel, e.g.: gpt-4o. Defaults to gpt-4o''',
-        require=False, default='gpt-4o')
+        require=False)
     
     temperature = Option(
         doc='''
@@ -118,7 +118,7 @@ class CLAAiScore(StreamingCommand):
             fs_param = json.loads(fs_clearpwd)
             fs_param_llm_provider = fs_param.get('credLlmProv')
             fs_param_llm_api_key = fs_param.get('credApiKey')
-            fs_param_llm_api_model = fs_param.get('credModel', self.model)
+            fs_param_llm_api_model = fs_param.get('credModel') or self.model
             cla_payload = r[self.textfield]
             
             llm = self.llm_provider(llm_provider=fs_param_llm_provider, llm_api_key=fs_param_llm_api_key, llm_api_url=self.api_url, llm_model=fs_param_llm_api_model, llm_temp=llm_temp)
@@ -129,7 +129,7 @@ class CLAAiScore(StreamingCommand):
                 continue
             
             no_err, response = llm.ask(prompt=cla_payload)
-            outf = f'{self.output_field}__{fs_param_llm_provider}__{self.textfield}' if no_err else err_m
+            outf = f'{self.output_field}__by{fs_param_llm_provider}__{self.textfield}' if no_err else err_m
             r[outf] = response
             
             yield r

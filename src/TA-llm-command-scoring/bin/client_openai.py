@@ -10,11 +10,11 @@ class OpenAIGPTClient:
     PP_FNAME = 'PP000001_20250714.txt'
     OPEN_AI_URL = 'https://api.openai.com/v1/chat/completions'
     
-    def __init__(self, api_key, url=None, temperature=0, model="gpt-4o"):
+    def __init__(self, api_key, model, url=None, temperature=0):
         self.api_key = api_key
         self.url = url or self.OPEN_AI_URL
         self.temperature = temperature
-        self.model = model
+        self.model = model or "gpt-4o"
     
     def calc_pre_prompt_sha256(self):
         sha = hashlib.sha256()

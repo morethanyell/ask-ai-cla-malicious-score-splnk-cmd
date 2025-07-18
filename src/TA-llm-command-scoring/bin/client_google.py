@@ -11,10 +11,10 @@ class GoogleGeminiClient:
     PP_FNAME = 'PP000001_20250714.txt'
     GOOGLE_GEM_URL = 'https://generativelanguage.googleapis.com'
 
-    def __init__(self, api_key, url=None, model="gemini-2.5-flash", api_ver="v1beta"):
+    def __init__(self, api_key, model, url=None, api_ver="v1beta"):
         self.api_key = api_key
         self.url = url or self.GOOGLE_GEM_URL
-        self.model = model
+        self.model = model or "gemini-2.5-flash"
         self.api_ver = api_ver
         
     def calc_pre_prompt_sha256(self):

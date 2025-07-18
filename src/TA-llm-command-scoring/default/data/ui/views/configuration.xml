@@ -28,7 +28,7 @@
                     <th>LLM Provider</th>
                     <th>Model</th>
                     <th>API Key</th>
-                    <th>Select</th>
+                    <th class="centered-header">Select</th>
                   </tr>
                 </thead>
                 <tbody>

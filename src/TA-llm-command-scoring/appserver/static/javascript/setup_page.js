@@ -97,7 +97,7 @@ require([
                 if (typeof pwData.clear_password === "string") {
                     try {
                         credClearText = JSON.parse(pwData.clear_password);
-                    } catch (_) { }
+                    } catch (_) { } // Don't care, move on
                 }
 
                 if (!credClearText) continue;
@@ -130,7 +130,6 @@ require([
         }
     });
 
-    // Handle form submission
     addCredForm.onsubmit = async function (event) {
 
         event.preventDefault();
