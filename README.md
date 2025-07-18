@@ -55,7 +55,7 @@ This app comes with an authorize.conf that defines a role called "can_run_claais
 ```
 
 ### Other optional params
-- api_url — OpenAI's current working API URL (Defaults to https://api.openai.com/v1/chat/completions)
+- api_url — OpenAI's current working API URL (defaults to OpenAI or Google Gemini's working API URL as of 2025-July)
 - temperature — A number ranging from 0.0 to 1.9. Temperature controls the randomness or creativity of the model's responses. (Defaults to 0.0)
 - output_field — Give a field name to the AI's reponse (Defaults to `ai_mal_score__by<llm provider, i.e.: openai | google>__<name of the input textfied>`)
 
