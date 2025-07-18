@@ -40,14 +40,34 @@ and a short explanation of why it chose that score. It integrates directly into 
 
 ## 🔐 API Key Setup
 
-- During the first launch of the app, a Splunk user with Admin role would be redirected to setup page 
-    - NOTE: Users who don't have the Admin role will not be able to set up an API key or view the Configuration page.
-- Add your OpenAI Developer Platform API Key and give it a unique name
+#### Button [ Add New LLM Provider ] (actuall add new API credential)
+- On first launch, a Splunk user with Admin role will be redirected to the setup page.
+    - ⚠️ Note: Users without the Admin role cannot set up an API key or view the Configuration page.
+
+    Form Fields
+- Name : Provide a short, unique identifier for your API credential.
+    - Special characters are not allowed
+    - Whitespace will be replaced with hyphens
+    - This name acts as the primary key used in the `api_name` command parameter
+    - e.g., "My First ChatGPT" becomes: my-first-chatgpt
+- Description : Add a brief summary—such as project purpose or key expiration date.
+- LLM Provider : Pick the provider from the dropdown. Straightforward.
+- Model : Optionally override the default model.
+    - Examples: gemini-2.5-flash-lite-preview-06-17, gpt-4.1-2025-04-14
+    - Invalid model names will throw an error.
+- API Key : Paste your secret key here. Handle with care.
+
+#### Button [ Add New LLM Provider ] (modify existing)
+- If the name you enter already exists, the credential will be updated—not duplicated.
+    - For example, if a credential with Name = "bard" already exists, re-submitting with "bard" will overwrite its description, provider, model, and secret key.
+
+#### Button [ Delete Selected ]
+- Click to delete the selected credential(s). (You know what this does. No surprises.)
 ---
 
 ## 🧪 Usage
 
-This app comes with an authorize.conf that defines a role called "can_run_claaiscore". Only users with Admin and this role can view the app and run the command. However the custom command may be ran everywhere as it is exported globally.
+This app comes with an authorize.conf that defines a role called "can_run_claaiscore". Only users with Admin and this role can view the app and run the command. However the custom command may be ran everywhere as it is exported globally. 
 
 ```spl
 | your_search_here 
