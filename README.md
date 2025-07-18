@@ -84,7 +84,7 @@ This app comes with an authorize.conf that defines a role called "can_run_claais
 | tstats max(_time) as _time from datamodel=Endpoint.Processes where Processes.process_name="lsass.exe" by Process.user Process.process
 | rename Process.* as *
 | claaiscore textfield=process api_name=chatgpt-expires-aug2025 output_field=decision
-| fields _time user process ai_mal_score__process
+| fields _time user process decision__byopenai__process
 | where match(decision__byopenai__process, "\[[45]\].+Malicious")
 ```
 
