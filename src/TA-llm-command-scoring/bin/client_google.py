@@ -71,10 +71,10 @@ class GoogleGeminiClient:
 
         try:
 
-            base_url = self.url_gen(self)
+            url = self.url_gen(self)
             ok_http_but_no_resp = "TA-llm-command-scoring: Sorry, the API call was fine but Gemini did not respond correctly."
             
-            response = requests.post(base_url, headers=headers, data=json.dumps(payload))
+            response = requests.post(url, headers=headers, data=json.dumps(payload))
             
             if response.status_code == 200:
                 

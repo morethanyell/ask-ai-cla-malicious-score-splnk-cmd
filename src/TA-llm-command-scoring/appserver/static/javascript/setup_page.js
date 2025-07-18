@@ -54,6 +54,7 @@ require([
 
             existingPw.del();
             row.remove();
+            reloadApp(service);
             redirectToApp();
 
         }
@@ -200,8 +201,6 @@ require([
 
                 setIsConfigured(installStanza, 1);
                 reloadApp(service);
-
-                $('.success').show();
                 redirectToApp();
 
             } if (!existingPw) {
@@ -222,13 +221,6 @@ require([
 
         } catch (e) {
             console.warn(e);
-            $('.error').show();
-            $('#error_details').show();
-            const errText = `Error encountered while saving credentials.`;
-            errText += (e.toString() === '[object Object]') ? '' : e.toString();
-            if (e.hasOwnProperty('status')) errText += `<br>[${e.status}] `;
-            if (e.hasOwnProperty('responseText')) errText += e.responseText;
-            $('#error_details').html(errText);
         }
 
         modal.style.display = 'none';

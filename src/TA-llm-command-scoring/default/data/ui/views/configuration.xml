@@ -76,9 +76,6 @@
                 <button type="button" id="cancelButton">Cancel</button>
                 <button type="submit" id="submitButton">Submit</button>
               </div>
-              <div class="success">API Key saved successfully, redirecting to app...</div>
-              <div class="error">Issue encountered while saving the API key, details below:</div>
-              <code id="error_details"></code>
             </form>
           </div>
         </div>
