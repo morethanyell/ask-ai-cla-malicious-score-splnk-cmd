@@ -8,3 +8,4 @@ __pycache__/
 *.log
 *.pyc
 *passwords.conf
+local.meta
