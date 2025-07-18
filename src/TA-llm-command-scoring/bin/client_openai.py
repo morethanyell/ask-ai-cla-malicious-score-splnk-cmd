@@ -8,10 +8,11 @@ class OpenAIGPTClient:
     
     PP_INTEGRITY = 'afbfd42ca1e939498c481d7f38fa572d609e1131ddaaca5939b4151cc2b50974'
     PP_FNAME = 'PP000001_20250714.txt'
+    OPEN_AI_URL = 'https://api.openai.com/v1/chat/completions'
     
-    def __init__(self, api_key, url, temperature=0, model="gpt-4o"):
+    def __init__(self, api_key, url=None, temperature=0, model="gpt-4o"):
         self.api_key = api_key
-        self.url = url
+        self.url = url or self.OPEN_AI_URL
         self.temperature = temperature
         self.model = model
     
