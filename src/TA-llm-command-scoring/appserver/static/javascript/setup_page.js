@@ -1,178 +1,160 @@
 "use strict";
 
-const appName = "TA-llm-command-scoring";
-const appNamespace = {
-    owner: "nobody",
-    app: appName,
-    sharing: "global",
-};
-
 require([
-    "jquery", "splunkjs/splunk",
+    "jquery", 
+    "splunkjs/splunk"
 ], function ($, splunkjs) {
 
-    const modal = document.getElementById('myModal');
-    const addNewBut = document.getElementById('addNewBut');
-    const delSelBut = document.getElementById('delSelectedBut');
+    // === Constants and Namespaces === //
+    const APP_NAME = "TA-llm-command-scoring";
+    const APP_NAMESPACE = {
+        owner: "nobody",
+        app: APP_NAME,
+        sharing: "global",
+    };
+
+    // === Utility Functions === //
+    const getEl = id => document.getElementById(id);
+
+    function maskApiKey(key) {
+        if (!key || key.length < 3) return "n/a";
+        return key.slice(0, 3) + "*".repeat(7);
+    }
+
+    function isTruthy(val) {
+        if (typeof val === "boolean") return val;
+        if (typeof val === "number") return val !== 0;
+        if (typeof val === "string") {
+            const lc = val.toLowerCase();
+            return ["true", "t", "1"].includes(lc);
+        }
+        return false;
+    }
+
+    function getSplunkService(namespace = APP_NAMESPACE) {
+        const http = new splunkjs.SplunkWebHttp();
+        return new splunkjs.Service(http, namespace);
+    }
+
+    async function setIsConfigured(installStanza, val) {
+        await installStanza.update({ is_configured: val });
+    }
+
+    async function reloadApp(service) {
+        const apps = service.apps();
+        await apps.fetch();
+        const app = apps.item(APP_NAME);
+        await app.fetch();
+        await app.reload();
+    }
+
+    function redirectToApp(waitMs = 500) {
+        setTimeout(() => {
+            window.location.href = `/app/${APP_NAME}`;
+        }, waitMs);
+    }
+
+    function openModal(modal, form) {
+        modal.style.display = "block";
+        if (form) form.reset();
+    }
+
+    function closeModal(modal, form) {
+        modal.style.display = "none";
+        if (form) form.reset();
+    }
+
+    // === DOM Elements === //
+    const modal = getEl('myModal');
+    const addNewBut = getEl('addNewBut');
+    const delSelBut = getEl('delSelectedBut');
     const closeButton = document.querySelector('.close-button');
-    const cancelButton = document.getElementById('cancelButton');
-    const addCredForm = document.getElementById('addCredForm');
+    const cancelButton = getEl('cancelButton');
+    const addCredForm = getEl('addCredForm');
+    const credsTable = getEl('llm-creds-table');
 
-    addNewBut.onclick = function () {
-        modal.style.display = 'block';
-    }
+    // === Modal Events === //
+    addNewBut.onclick = () => openModal(modal, addCredForm);
+    closeButton.onclick = () => closeModal(modal, addCredForm);
+    cancelButton.onclick = () => closeModal(modal, addCredForm);
+    window.onclick = event => {
+        if (event.target === modal) closeModal(modal, addCredForm);
+    };
 
-    delSelBut.onclick = async function () {
-
-        const checkedBoxes = document.querySelectorAll('#llm-creds-table .row-checkbox:checked');
-        if (checkedBoxes.length === 0) {
-            alert("No rows selected.");
-            return;
-        }
-
-        const count = checkedBoxes.length;
-        const confirmed = confirm(`Are you sure you want to delete ${count} credential${count > 1 ? 's' : ''}?`);
-
-        if (!confirmed) return;
-
-        const service = getSplunkService();
-
-        for (const checkbox of checkedBoxes) {
-
-            const row = checkbox.closest('tr');
-            const stanza = row.cells[0].textContent.trim();
-
-            const passKey = `${appName}:${stanza}:`;
-
-            console.log(`Deleting: ${passKey} data. From value: ${passKey}`);
-
-            const passwords = service.storagePasswords({ app: appName });
-            await passwords.fetch();
-            const existingPw = passwords.item(passKey);
-
-            if (!existingPw) { continue; }
-
-            existingPw.del();
-            row.remove();
-            reloadApp(service);
-            redirectToApp();
-
-        }
-
-    }
-
-    closeButton.onclick = function () {
-        modal.style.display = 'none';
-        addCredForm.reset();
-    }
-
-    cancelButton.onclick = function () {
-        modal.style.display = 'none';
-        addCredForm.reset();
-    }
-
-    window.onclick = function (event) {
-        if (event.target == modal) {
-            modal.style.display = 'none';
-            addCredForm.reset();
-        }
-    }
-
-    $(document).ready(async function () {
-
+    // === Credentials Listing === //
+    async function renderCredentials() {
         try {
-
             const service = getSplunkService();
-            const passwords = service.storagePasswords({ app: appName });
+            const passwords = service.storagePasswords({ app: APP_NAME });
             await passwords.fetch();
-
             const list = passwords.list();
 
-            for (const pw of list) {
+            // Clear table except the header (assumes <thead> used for header)
+            $(credsTable).find("tbody").empty();
 
-                pwData = pw._properties;
-
-                const credName = pwData.username;
+            list.forEach(pw => {
+                const pwData = pw._properties;
                 let credClearText = null;
-
                 if (typeof pwData.clear_password === "string") {
                     try {
                         credClearText = JSON.parse(pwData.clear_password);
-                    } catch (_) { } // Don't care, move on
+                    } catch (_) { }
                 }
+                if (!credClearText) return;
 
-                if (!credClearText) continue;
-
-                const credDesc = credClearText.credDesc ?? "n/a";
-                const credLlmProv = credClearText.credLlmProv ?? "n/a";
-                const credModel = credClearText.credModel ?? "n/a";
-                const credApiKey = credClearText.credApiKey ?? "n/a";
-                const credApiKeyMasked = (credApiKey.slice(0, 3) + "*".repeat(7)) ?? "n/a";
-
-                const row = `
+                const rowHtml = `
                     <tr>
-                        <td>${credName}</td>
-                        <td>${credDesc}</td>
-                        <td>${credLlmProv}</td>
-                        <td>${credModel}</td>
-                        <td>${credApiKeyMasked}</td>
+                        <td>${pwData.username}</td>
+                        <td>${credClearText.credDesc || "n/a"}</td>
+                        <td>${credClearText.credLlmProv || "n/a"}</td>
+                        <td>${credClearText.credModel || "n/a"}</td>
+                        <td>${maskApiKey(credClearText.credApiKey)}</td>
                         <td class="action-cell">
                             <input type="checkbox" class="row-checkbox" />
                         </td>
                     </tr>
                 `;
-
-                $('#llm-creds-table').append(row);
-
-            }
-
+                $(credsTable).append(rowHtml);
+            });
         } catch (err) {
             console.error("Error fetching passwords:", err);
         }
-    });
+    }
 
+    // Initial render of credentials when page loads
+    $(document).ready(renderCredentials);
+
+    // === Add Credential Handler === //
     addCredForm.onsubmit = async function (event) {
-
         event.preventDefault();
 
-        const credName = document.getElementById('credNameId').value;
-        const credNameClean = credName.trim().replace(/\s+/g, '-').toLowerCase();
-        const credDesc = document.getElementById('credDescriptionId').value;
-        const credLlmProv = document.getElementById('credLlmProviderId').value;
-        const credModel = document.getElementById('credModelId').value;
-        const credApiKey = document.getElementById('credApiSecretId').value;
+        // Collect and trim form fields
+        const credName = getEl('credNameId').value.trim();
+        const credNameClean = credName.replace(/\s+/g, '-').toLowerCase();
+        const credDesc = getEl('credDescriptionId').value.trim();
+        const credLlmProv = getEl('credLlmProviderId').value.trim();
+        const credModel = getEl('credModelId').value.trim();
+        const credApiKey = getEl('credApiSecretId').value.trim();
 
-        const fields = {
-            credName: "API Name",
-            credLlmProv: "API LLM Provider",
-            credApiKey: "API Key"
-        };
-
-        for (const [key, value] of Object.entries(fields)) {
-            if (!eval(key)) {
-                alert(`${value} can't be empty`);
-                throw new Error(`${value} is empty!`);
-            }
-        }
-
-        if (credApiKey.length < 6) {
-            alert(`The length of the API Key is too short. Please double-check.`);
-            throw new Error(`API Key too short.`);
-        }
+        // Basic field validation
+        if (!credName) return alert("API Name can't be empty");
+        if (!credLlmProv) return alert("API LLM Provider can't be empty");
+        if (!credApiKey) return alert("API Key can't be empty");
+        if (credApiKey.length < 6) return alert("The API Key is too short (min 6 characters)");
 
         const credPwToSave = {
-            credNameClean: credNameClean,
-            credDesc: credDesc,
-            credLlmProv: credLlmProv,
-            credModel: credModel,
-            credApiKey, credApiKey
-        }
+            credNameClean,
+            credDesc,
+            credLlmProv,
+            credModel,
+            credApiKey,
+        };
 
         try {
-
             const service = getSplunkService();
 
-            const configCollection = service.configurations(appNamespace);
+            // Config check for app setup
+            const configCollection = service.configurations(APP_NAMESPACE);
             await configCollection.fetch();
 
             const appConfig = configCollection.item('app');
@@ -181,88 +163,80 @@ require([
             const installStanza = appConfig.item('install');
             await installStanza.fetch();
 
-            const isConfigured = installStanza.properties().is_configured;
-            if (isTrue(isConfigured)) {
-                console.warn(`App is configured already (is_configured=${isConfigured}), skipping setup page...`);
-                reloadApp(service);
-                redirectToApp();
+            if (isTruthy(installStanza.properties().is_configured)) {
+                console.warn("App already configured. Skipping setup page...");
+                await reloadApp(service);
+                return redirectToApp();
             }
-
-            const passKey = `${appName}:${credNameClean}:`;
-            const passwords = service.storagePasswords(appNamespace);
+            
+            // Save credentials
+            const passKey = `${APP_NAME}:${credNameClean}:`;
+            const passwords = service.storagePasswords(APP_NAMESPACE);
             await passwords.fetch();
 
-            const existingPw = passwords.item(passKey);
-            await existingPw;
+            let existingPw = passwords.item(passKey);
 
-            function passwordCallback(err, resp) {
-
+            // Callback for credential save
+            const onComplete = async (err) => {
                 if (err) throw err;
-
-                setIsConfigured(installStanza, 1);
-                reloadApp(service);
+                await setIsConfigured(installStanza, 1);
+                await reloadApp(service);
                 redirectToApp();
-
-            } if (!existingPw) {
-
-                passwords.create(
-                    {
-                        name: credNameClean,
-                        password: JSON.stringify(credPwToSave),
-                        realm: appName,
-                    }, passwordCallback);
-
+            };
+            
+            if (!existingPw) {
+                passwords.create({
+                    name: credNameClean,
+                    password: JSON.stringify(credPwToSave),
+                    realm: APP_NAME,
+                }, onComplete);
             } else {
-                existingPw.update(
-                    {
-                        password: JSON.stringify(credPwToSave),
-                    }, passwordCallback)
+                existingPw.update({
+                    password: JSON.stringify(credPwToSave),
+                }, onComplete);
             }
-
         } catch (e) {
             console.warn(e);
         }
 
-        modal.style.display = 'none';
-        addCredForm.reset();
+        closeModal(modal, addCredForm);
+    };
 
-    }
-
-    function getSplunkService(namespace = appNamespace) {
-        const http = new splunkjs.SplunkWebHttp();
-        return new splunkjs.Service(http, namespace);
-    }
-
-    async function setIsConfigured(installStanza, val) {
-        await installStanza.update({
-            is_configured: val
-        });
-    }
-
-    async function reloadApp(service) {
-        var apps = service.apps();
-        await apps.fetch();
-
-        var app = apps.item(appName);
-        await app.fetch();
-        await app.reload();
-    }
-
-    function redirectToApp(waitMs) {
-        setTimeout(() => {
-            window.location.href = `/app/${appName}`;
-        }, 500);
-    }
-
-    function isTrue(v) {
-        if (typeof (v) === typeof (true)) return v;
-        if (typeof (v) === typeof (1)) return v !== 0;
-        if (typeof (v) === typeof ('true')) {
-            if (v.toLowerCase() === 'true') return true;
-            if (v === 't') return true;
-            if (v === '1') return true;
+    // === Delete Selected Credentials Handler === //
+    delSelBut.onclick = async () => {
+        const checkedBoxes = document.querySelectorAll('#llm-creds-table .row-checkbox:checked');
+        if (checkedBoxes.length === 0) {
+            alert("No rows selected.");
+            return;
         }
-        return false;
-    }
+
+        const count = checkedBoxes.length;
+        if (!confirm(`Are you sure you want to delete ${count} credential${count > 1 ? 's' : ''}?`)) return;
+
+        const service = getSplunkService();
+        const passwords = service.storagePasswords({ app: APP_NAME });
+        await passwords.fetch();
+
+        let anyDeleted = false;
+        for (const checkbox of checkedBoxes) {
+            const row = checkbox.closest("tr");
+            const stanza = row.cells[0].textContent.trim();
+            const passKey = `${APP_NAME}:${stanza}:`;
+            const existingPw = passwords.item(passKey);
+            if (!existingPw) continue;
+            await new Promise((resolve, reject) => {
+                existingPw.del((err) => {
+                    if (err) reject(err);
+                    else resolve();
+                });
+            });
+            row.remove();
+            anyDeleted = true;
+        }
+        if (anyDeleted) {
+            await reloadApp(service);
+            redirectToApp();
+        }
+    };
 
 });

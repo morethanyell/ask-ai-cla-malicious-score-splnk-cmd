@@ -1,179 +1,181 @@
+:root {
+  --font-stack: 'Splunk Platform Sans', 'Proxima Nova', Roboto, 'Droid', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  --font-sans: sans-serif;
+  --primary-color: #63A134;
+  --secondary-color: #acacac;
+  --header-bg: #f4f4f4;
+  --table-border: #ddd;
+  --modal-bg: rgba(0,0,0,0.4);
+  --modal-content-bg: #fefefe;
+  --btn-bg: #f5f5f5;
+  --btn-border: #333;
+  --btn-radius: 4px;
+  --box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2), 0 6px 20px 0 rgba(0,0,0,0.19);
+}
+
+/* --- Main Container --- */
 #main_container {
-	font-family: Splunk Platform Sans, Proxima Nova, Roboto, Droid, Helvetica Neue, Helvetica, Arial, sans-serif;
-	max-width: 100%;
-	padding: 10px;
-	font-family: sans-serif;
+  font-family: var(--font-stack), var(--font-sans);
+  max-width: 100%;
+  padding: 10px;
 }
 
+/* --- Typography and Layouts --- */
+.text, .api-key-container, .success, .error, 
+.form-group, .button-group, .modal, .modal-content,
+th, td, .button, .action-cell {
+  font-family: var(--font-stack), var(--font-sans);
+}
 .text {
-	font-family: Splunk Platform Sans, Proxima Nova, Roboto, Droid, Helvetica Neue, Helvetica, Arial, sans-serif;
-	display: flex;
-	align-items: center;
-	margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
 }
-
 .text span {
-	width: 140px;
+  width: 140px;
 }
-
 .text input {
-	flex: 1;
-	padding: 5px;
-	border: 1px solid #ccc;
-	border-radius: 4px;
+  flex: 1;
+  padding: 5px;
+  border: 1px solid #ccc;
+  border-radius: var(--btn-radius);
 }
-
 .api-key-container {
-	font-family: Splunk Platform Sans, Proxima Nova, Roboto, Droid, Helvetica Neue, Helvetica, Arial, sans-serif;
-	padding-bottom: 20px;
+  padding-bottom: 20px;
 }
 
+/* --- Table Styles --- */
 table {
-	font-family: Splunk Platform Sans, Proxima Nova, Roboto, Droid, Helvetica Neue, Helvetica, Arial, sans-serif;
-	border-collapse: collapse;
-	width: 100%;
-	font-family: sans-serif;
+  font-family: var(--font-sans);
+  border-collapse: collapse;
+  width: 100%;
 }
-
-th,
-td {
-	font-family: Splunk Platform Sans, Proxima Nova, Roboto, Droid, Helvetica Neue, Helvetica, Arial, sans-serif;
-	border: 1px solid #ddd;
-	padding: 12px;
-	text-align: left;
+th, td {
+  border: 1px solid var(--table-border);
+  padding: 12px;
+  text-align: left;
 }
-
 th {
-	background-color: #f4f4f4;
+  background-color: var(--header-bg);
 }
-
 .centered-header {
   text-align: center;
 }
-
 .action-cell {
-	font-family: Splunk Platform Sans, Proxima Nova, Roboto, Droid, Helvetica Neue, Helvetica, Arial, sans-serif;
-	text-align: center;
-	cursor: pointer;
-	font-size: 18px;
+  text-align: center;
+  cursor: pointer;
+  font-size: 18px;
 }
 
-.button {
-	font-family: Splunk Platform Sans, Proxima Nova, Roboto, Droid, Helvetica Neue, Helvetica, Arial, sans-serif;
-	margin-top: 10px;
-	padding: 8px 12px;
-	border: 1px solid #333;
-	border-radius: 4px;
-	background: #f5f5f5;
-	cursor: pointer;
+/* --- Buttons --- */
+.button, .button-group button {
+  margin-top: 10px;
+  padding: 8px 12px;
+  border: 1px solid var(--btn-border);
+  border-radius: var(--btn-radius);
+  background: var(--btn-bg);
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 16px;
+}
+.button-group {
+  text-align: right;
+  margin-top: 20px;
+}
+.button-group button {
+  margin-left: 10px;
+}
+#cancelButton {
+  background-color: var(--secondary-color);
+  color: #fff;
+}
+#submitButton {
+  background-color: var(--primary-color);
+  color: #fff;
+  border: none;
 }
 
-.success,
-.error {
-	font-family: Splunk Platform Sans, Proxima Nova, Roboto, Droid, Helvetica Neue, Helvetica, Arial, sans-serif;
-	margin-top: 10px;
-	display: none;
+/* --- Messages --- */
+.success, .error {
+  margin-top: 10px;
+  display: none;
 }
 
 #error_details {
-	font-family: Splunk Platform Sans, Proxima Nova, Roboto, Droid, Helvetica Neue, Helvetica, Arial, sans-serif;
-	display: none;
-	margin-top: 5px;
-	background: #f9f9f9;
-	border: 1px solid #ccc;
-	padding: 5px;
-	white-space: pre-wrap;
+  display: none;
+  margin-top: 5px;
+  background: #f9f9f9;
+  border: 1px solid #ccc;
+  padding: 5px;
+  white-space: pre-wrap;
 }
 
-/* Submit Form */
-
+/* --- Modal Styles --- */
 .modal {
-	font-family: Splunk Platform Sans, Proxima Nova, Roboto, Droid, Helvetica Neue, Helvetica, Arial, sans-serif;
-	display: none;
-	position: fixed;
-	z-index: 1;
-	left: 0;
-	top: 0;
-	width: 100%;
-	height: 100%;
-	overflow: auto;
-	background-color: rgb(0, 0, 0);
-	background-color: rgba(0, 0, 0, 0.4);
-	padding-top: 60px;
-	margin-left: 0% !important;
+  display: none;
+  position: fixed;
+  z-index: 1000;
+  left: 0;
+  top: 0;
+  width: 100vw;
+  height: 100vh;
+  overflow: auto;
+  background: var(--modal-bg);
+  padding-top: 60px;
 }
-
 .modal-content {
-	font-family: Splunk Platform Sans, Proxima Nova, Roboto, Droid, Helvetica Neue, Helvetica, Arial, sans-serif;
-	background-color: #fefefe;
-	margin: 5% auto;
-	padding: 20px;
-	border: 1px solid #888;
-	width: 100%;
-	max-width: 500px;
-	border-radius: 8px;
-	box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
-	position: relative;
+  background: var(--modal-content-bg);
+  margin: 5% auto;
+  padding: 20px;
+  border: 1px solid #888;
+  width: 100%;
+  max-width: 500px;
+  border-radius: 8px;
+  box-shadow: var(--box-shadow);
+  position: relative;
 }
-
 .close-button {
-	font-family: Splunk Platform Sans, Proxima Nova, Roboto, Droid, Helvetica Neue, Helvetica, Arial, sans-serif;
-	color: #aaa;
-	float: right;
-	font-size: 28px;
-	font-weight: bold;
+  color: #aaa;
+  float: right;
+  font-size: 28px;
+  font-weight: bold;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+.close-button:hover, .close-button:focus {
+  color: #000;
+  text-decoration: none;
 }
 
-.close-button:hover,
-.close-button:focus {
-	color: black;
-	text-decoration: none;
-	cursor: pointer;
-}
-
+/* --- Form Styles --- */
 .form-group {
-	font-family: Splunk Platform Sans, Proxima Nova, Roboto, Droid, Helvetica Neue, Helvetica, Arial, sans-serif;
-	margin-bottom: 15px;
+  margin-bottom: 15px;
 }
-
 .form-group label {
-	font-family: Splunk Platform Sans, Proxima Nova, Roboto, Droid, Helvetica Neue, Helvetica, Arial, sans-serif;
-	display: block;
-	margin-bottom: 5px;
-	font-weight: bold;
+  display: block;
+  margin-bottom: 5px;
+  font-weight: bold;
 }
-
 .form-group input[type="text"],
 .form-group input[type="password"] {
-	width: calc(100% - 20px);
-	padding: 10px;
-	border: 1px solid #ccc;
-	border-radius: 4px;
+  width: calc(100% - 20px);
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: var(--btn-radius);
 }
 
-.button-group {
-	font-family: Splunk Platform Sans, Proxima Nova, Roboto, Droid, Helvetica Neue, Helvetica, Arial, sans-serif;
-	text-align: right;
-	margin-top: 20px;
-}
-
-.button-group button {
-	padding: 10px 20px;
-	margin-left: 10px;
-	border: none;
-	border-radius: 4px;
-	cursor: pointer;
-	font-size: 16px;
-}
-
-#cancelButton {
-	font-family: Splunk Platform Sans, Proxima Nova, Roboto, Droid, Helvetica Neue, Helvetica, Arial, sans-serif;
-	background-color: #acacac;
-	color: white;
-}
-
-#submitButton {
-	font-family: Splunk Platform Sans, Proxima Nova, Roboto, Droid, Helvetica Neue, Helvetica, Arial, sans-serif;
-	background-color: #63A134;
-	color: white;
+/* --- Responsive --- */
+@media (max-width: 600px) {
+  .modal-content {
+    max-width: 90vw;
+    padding: 10px;
+  }
+  th, td {
+    padding: 8px;
+  }
+  .form-group input[type="text"],
+  .form-group input[type="password"] {
+    width: 100%;
+  }
 }
