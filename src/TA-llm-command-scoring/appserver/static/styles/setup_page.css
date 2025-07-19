@@ -122,6 +122,7 @@ th {
   overflow: auto;
   background: var(--modal-bg);
   padding-top: 60px;
+  margin-left: 0% !important;
 }
 .modal-content {
   background: var(--modal-content-bg);

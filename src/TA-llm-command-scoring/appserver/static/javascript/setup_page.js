@@ -1,7 +1,7 @@
 "use strict";
 
 require([
-    "jquery", 
+    "jquery",
     "splunkjs/splunk"
 ], function ($, splunkjs) {
 
@@ -21,22 +21,20 @@ require([
         return key.slice(0, 3) + "*".repeat(7);
     }
 
-    function isTruthy(val) {
-        if (typeof val === "boolean") return val;
-        if (typeof val === "number") return val !== 0;
-        if (typeof val === "string") {
-            const lc = val.toLowerCase();
-            return ["true", "t", "1"].includes(lc);
-        }
-        return false;
-    }
-
     function getSplunkService(namespace = APP_NAMESPACE) {
         const http = new splunkjs.SplunkWebHttp();
         return new splunkjs.Service(http, namespace);
     }
 
-    async function setIsConfigured(installStanza, val) {
+    async function setIsAppConfigured(service, val) {
+        const configCollection = service.configurations(APP_NAMESPACE);
+        await configCollection.fetch();
+
+        const appConfig = configCollection.item('app');
+        await appConfig.fetch();
+
+        const installStanza = appConfig.item('install');
+        await installStanza.fetch();
         await installStanza.update({ is_configured: val });
     }
 
@@ -153,22 +151,6 @@ require([
         try {
             const service = getSplunkService();
 
-            // Config check for app setup
-            const configCollection = service.configurations(APP_NAMESPACE);
-            await configCollection.fetch();
-
-            const appConfig = configCollection.item('app');
-            await appConfig.fetch();
-
-            const installStanza = appConfig.item('install');
-            await installStanza.fetch();
-
-            if (isTruthy(installStanza.properties().is_configured)) {
-                console.warn("App already configured. Skipping setup page...");
-                await reloadApp(service);
-                return redirectToApp();
-            }
-            
             // Save credentials
             const passKey = `${APP_NAME}:${credNameClean}:`;
             const passwords = service.storagePasswords(APP_NAMESPACE);
@@ -179,11 +161,11 @@ require([
             // Callback for credential save
             const onComplete = async (err) => {
                 if (err) throw err;
-                await setIsConfigured(installStanza, 1);
+                await setIsAppConfigured(service, 1);
                 await reloadApp(service);
                 redirectToApp();
             };
-            
+
             if (!existingPw) {
                 passwords.create({
                     name: credNameClean,
@@ -204,6 +186,7 @@ require([
 
     // === Delete Selected Credentials Handler === //
     delSelBut.onclick = async () => {
+        
         const checkedBoxes = document.querySelectorAll('#llm-creds-table .row-checkbox:checked');
         if (checkedBoxes.length === 0) {
             alert("No rows selected.");
@@ -224,12 +207,7 @@ require([
             const passKey = `${APP_NAME}:${stanza}:`;
             const existingPw = passwords.item(passKey);
             if (!existingPw) continue;
-            await new Promise((resolve, reject) => {
-                existingPw.del((err) => {
-                    if (err) reject(err);
-                    else resolve();
-                });
-            });
+            await existingPw.del();
             row.remove();
             anyDeleted = true;
         }
