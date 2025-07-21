@@ -45,6 +45,14 @@ class GoogleGeminiClient:
 
         with open(file_path, "r", encoding="utf-8") as f:
             return f.read()
+    
+    def get_full_query_params(self):
+        return {
+            "api_key": self.api_key or "n/a",
+            "api_url": self.api_url or "n/a",
+            "api_ver": self.api_ver or "n/a",
+            "model": self.model or "n/a",
+        }
 
     def url_gen(self):
         return f"{self.url}/{self.api_ver}/models/{self.model}:generateContent"

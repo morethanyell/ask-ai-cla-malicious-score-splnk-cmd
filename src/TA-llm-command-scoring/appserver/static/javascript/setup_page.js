@@ -46,12 +46,6 @@ require([
         await app.reload();
     }
 
-    function redirectToApp(waitMs = 500) {
-        setTimeout(() => {
-            window.location.href = `/app/${APP_NAME}`;
-        }, waitMs);
-    }
-
     function openModal(modal, form) {
         modal.style.display = "block";
         if (form) form.reset();
@@ -163,7 +157,6 @@ require([
                 if (err) throw err;
                 await setIsAppConfigured(service, 1);
                 await reloadApp(service);
-                redirectToApp();
             };
 
             if (!existingPw) {
@@ -187,6 +180,8 @@ require([
     // === Delete Selected Credentials Handler === //
     delSelBut.onclick = async () => {
         
+        debugger;
+
         const checkedBoxes = document.querySelectorAll('#llm-creds-table .row-checkbox:checked');
         if (checkedBoxes.length === 0) {
             alert("No rows selected.");
@@ -212,8 +207,9 @@ require([
             anyDeleted = true;
         }
         if (anyDeleted) {
+            await passwords.fetch();
+            console.log(passwords.list().length)
             await reloadApp(service);
-            redirectToApp();
         }
     };
 

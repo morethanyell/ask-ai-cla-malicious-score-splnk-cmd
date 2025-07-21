@@ -39,6 +39,14 @@ class OpenAIGPTClient:
             for chunk in iter(lambda: f.read(4096), b""):
                 sha.update(chunk)
         return sha.hexdigest()
+    
+    def get_full_query_params(self):
+        return {
+            "api_key": self.api_key or "n/a",
+            "api_url": self.api_url or "n/a",
+            "temperature": self.temperature or "n/a",
+            "model": self.model or "n/a",
+        }
 
     def get_pre_prompt(self) -> Optional[str]:
         """
