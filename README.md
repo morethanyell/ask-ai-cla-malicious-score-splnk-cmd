@@ -36,6 +36,8 @@ and a short explanation of why it chose that score. It integrates directly into 
 3. As a Splunk admin (or similar role), install the app by using the command `$SPLUNK_HOME/bin/splunk install app <release_file_name>`, e.g.: `$SPLUNK_HOME/bin/splunk install app /tmp/TA-llm-command-scoring_2_0_0.tar.gz`
 4. Restart Splunk
 
+NOTE: If you're installing this Splunk Technology Add-on (TA) custom command by downloading the source from this GitHub repo, be aware that the Splunk Python SDK is not included. I’ve intentionally added the entire library to .gitignore, so you’ll need to download and copy it manually. 
+
 ---
 
 ## 🔐 API Key Setup

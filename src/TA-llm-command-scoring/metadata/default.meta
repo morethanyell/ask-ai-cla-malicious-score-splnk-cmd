@@ -7,7 +7,7 @@ export = system
 
 [views/configuration]
 access = read : [ admin ], write : [ admin ]
-export = app
+export = none
 
 [commands/claaiscore]
 access = read : [ admin, can_run_claaiscore ], write : [ admin ]
@@ -27,4 +27,4 @@ export = system
 
 [passwords/*]
 access = read : [ admin, can_run_claaiscore ], write : [ admin ]
-export = app
+export = none
