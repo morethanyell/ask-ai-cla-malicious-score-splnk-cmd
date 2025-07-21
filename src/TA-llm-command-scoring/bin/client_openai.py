@@ -3,8 +3,8 @@
 import os
 import hashlib
 import requests
+import time
 from typing import Optional, Tuple
-
 
 class OpenAIGPTClient:
     """
@@ -21,12 +21,13 @@ class OpenAIGPTClient:
         api_key: str,
         model: Optional[str] = None,
         url: Optional[str] = None,
-        temperature: float = 0.0
+        temperature: Optional[float] = 0.0
     ):
         self.api_key = api_key
         self.model = model or "gpt-4o"
         self.url = url or self.OPENAI_API_URL
-        self.temperature = temperature
+        self.temperature = temperature or 0.0
+        self._last_elapsed = None
 
     def _pre_prompt_path(self) -> str:
         """Return absolute path to pre-prompt file."""
@@ -40,13 +41,24 @@ class OpenAIGPTClient:
                 sha.update(chunk)
         return sha.hexdigest()
     
+    @staticmethod
+    def _mask_api_for_debug(self, input_string):
+        if len(input_string) < 3:
+            # Handle cases where the string is shorter than 3 characters
+            return input_string + "*******"
+        else:
+            return input_string[:3] + "*******"
+    
     def get_full_query_params(self):
         return {
-            "api_key": self.api_key or "n/a",
-            "api_url": self.api_url or "n/a",
+            "api_key": self._mask_api_for_debug(self, self.api_key) or "n/a",
+            "api_url": self.url or "n/a",
             "temperature": self.temperature or "n/a",
             "model": self.model or "n/a",
         }
+    
+    def get_last_elapsed_time(self):
+        return self._last_elapsed
 
     def get_pre_prompt(self) -> Optional[str]:
         """
@@ -64,11 +76,10 @@ class OpenAIGPTClient:
             return f.read()
 
     def ask(self, prompt: str) -> Tuple[bool, str]:
-        """
-        Queries the OpenAI model with the pre_prompt + user prompt.
-        Returns (success, response_text or error_message).
-        """
+        
+        start_time = time.perf_counter()
         pre_prompt = self.get_pre_prompt()
+        
         if pre_prompt is None:
             msg = (
                 "Splunk TA Error: Pre-prompt file integrity check failed. "
@@ -91,6 +102,8 @@ class OpenAIGPTClient:
 
         try:
             response = requests.post(self.url, headers=headers, json=payload, timeout=30)
+            end_time = time.perf_counter()
+            self._last_elapsed = end_time - start_time
             if response.status_code == 200:
                 data = response.json()
                 content = (
@@ -101,11 +114,13 @@ class OpenAIGPTClient:
                 if content:
                     return True, content
                 else:
-                    return False, "API call succeeded but no content returned."
+                    return False, "Sorry, the API call was fine but OpenAI ChatGPT's response was either broken or empty."
             else:
                 return (
                     False,
-                    f"POST {self.url} returned ERROR: status_code={response.status_code}, details={response.text}"
+                    f"POST {self.url} returned an ERROR: status_code={response.status_code}, err_details={response.text}"
                 )
         except requests.RequestException as e:
-            return False, f"POST {self.url} returned ERROR: {e}"
+            end_time = time.perf_counter()
+            self._last_elapsed = end_time - start_time
+            return False, f"POST {self.url} returned an ERROR: {str(e)}"

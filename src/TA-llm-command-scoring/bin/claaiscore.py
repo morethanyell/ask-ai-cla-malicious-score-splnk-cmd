@@ -3,7 +3,7 @@
 import sys
 import re
 import json
-from typing import Generator, Dict, Any, Tuple, Optional
+from typing import Generator, Dict, Any, Optional
 from splunklib.searchcommands import dispatch, StreamingCommand, Configuration, Option, validators
 
 # You must ensure that these client classes exist and are themselves well-structured.
@@ -96,10 +96,6 @@ class CLAAiScore(StreamingCommand):
         no_result = f"Did not find any API Key that matches: {self.api_name}"
         err_field = 'err_msg'
         
-        logger = self.logger
-        logging_invocation = "TA-llm-command-scoring: `claaiscore`"
-        logger.info(f"{logging_invocation} was called.")
-
         for record in records:
             # 1. Check for text field presence
             if self.textfield not in record:
@@ -125,7 +121,7 @@ class CLAAiScore(StreamingCommand):
             try:
                 fs_param = json.loads(fs_clearpwd)
             except Exception as exc:
-                logger.error(f"{logging_invocation} encountered an error at stage='Parsing Splunk.StoragePasswords', err='{exc}'")
+                self.logger.error(f"claaiscore encountered an error at stage='Parsing Splunk.StoragePasswords', err='{exc}'")
                 record[err_field] = "Could not parse credential JSON."
                 yield record
                 continue
@@ -156,24 +152,25 @@ class CLAAiScore(StreamingCommand):
                 )
                 yield record
                 continue
-            
-            logger.info(f"{logging_invocation} generated an LLM client: {json.dumps(llm_client.get_full_query_params())}")
 
             # 5. Send to LLM and capture output
             try:
                 ok, response = llm_client.ask(prompt=prompt_text)
             except Exception as exc:
-                logger.error(f"{logging_invocation} encountered an error at stage='Asking LLM', err='{exc}'")
-                ok, response = False, f"Exception calling LLM: {exc}"
+                self.logger.debug(f"claaiscore encountered an error at stage='Asking LLM', err='{exc}'")
+                ok, response = False, f"Exception occurred while prompting the LLM: {exc}"
 
             result_field = (
                 f"{self.output_field}__by{llm_provider}__{self.textfield}"
                 if ok else err_field
             )
+            
+            record['_claaiscore_debug'] = json.dumps({
+                "fullParams": llm_client.get_full_query_params(),
+                "performance": llm_client.get_last_elapsed_time()
+            })
             record[result_field] = response
             
-            logger.info(f"{logging_invocation} ran successfully.")
-
             yield record
 
 
