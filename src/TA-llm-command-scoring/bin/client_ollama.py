@@ -2,29 +2,18 @@
 
 import requests
 import time
-from typing import Optional, Tuple
-from helper_preprompt import *
+from helper_preprompt import * 
 
-class OpenAIGPTClient:
-    """
-    Client for querying OpenAI GPT models, with pre-prompt integrity checking.
-    """
+class OllamaLocalLLMClient:
 
-    OPENAI_API_URL = 'https://api.openai.com/v1/chat/completions'
+    OLLAMA_URL = 'http://localhost'
 
-    def __init__(
-        self,
-        api_key: str,
-        model: Optional[str] = None,
-        url: Optional[str] = None,
-        temperature: Optional[float] = 0.0
-    ):
-        self.api_key = api_key
-        self.model = model or "gpt-4o"
-        self.url = url or self.OPENAI_API_URL
-        self.temperature = temperature or 0.0
+    def __init__(self, model=None, url=None, port=11434):
+        self.model = model
+        self.url = url or self.OLLAMA_URL
+        self.port = port
         self._last_elapsed = None
-
+    
     @staticmethod
     def _mask_api_for_debug(self, input_string):
         if len(input_string) < 3:
@@ -33,15 +22,25 @@ class OpenAIGPTClient:
         else:
             return input_string[:3] + "*******"
     
+    def get_full_query_params(self):
+        return {
+            "model": self.model or "n/a",
+            "api_url": self.url or "n/a",
+            "api_port": self.port,
+        }
+    
+    def url_gen(self):
+        return f"{self.url}:{self.port}/api/chat"
+    
     def get_last_elapsed_time(self):
         return self._last_elapsed
 
-    def ask(self, prompt: str) -> Tuple[bool, str]:
+    def ask(self, prompt):
         
         start_time = time.perf_counter()
         pph = PrePromptHandler()
         pre_prompt = pph.get_pre_prompt()
-        
+
         if pre_prompt is None:
             msg = (
                 "Splunk TA Error: Pre-prompt file integrity check failed. "
@@ -52,38 +51,44 @@ class OpenAIGPTClient:
 
         prompt_full = f'{pre_prompt}{prompt}\n```'
 
-        headers = {
-            "Authorization": f"Bearer {self.api_key}",
-            "Content-Type": "application/json"
-        }
+        headers = {"Content-Type": "application/json"}
         payload = {
             "model": self.model,
-            "messages": [{"role": "user", "content": prompt_full}],
-            "temperature": self.temperature
+            "stream": False,
+            "message": {
+                "role": "user",
+                "content": prompt_full
+            }
         }
 
         try:
-            response = requests.post(self.url, headers=headers, json=payload, timeout=30)
+            url = self.url_gen()
+            response = requests.post(url, headers=headers, json=payload)
             end_time = time.perf_counter()
             self._last_elapsed = end_time - start_time
             
             if response.status_code == 200:
                 
                 data = response.json()
+                
                 content = (
                     data.get("choices", [{}])[0]
                     .get("message", {})
                     .get("content", "")
                 )
+                
                 if content:
                     return True, content
                 else:
-                    return False, "Sorry, the API call was fine but OpenAI ChatGPT's response was either broken or empty."
+                    return False, f"Sorry, the API call was fine but Ollama::{self.model}'s response was either broken or empty."
+                
             else:
-                return (
-                    False,
-                    f"POST {self.url} returned an ERROR: status_code={response.status_code}, err_details={response.text}"
+                error_msg = (
+                    f"POST {self.url} returned an ERROR: "
+                    f"status_code={response.status_code}, err_details={response.text}"
                 )
+                return False, error_msg
+
         except requests.RequestException as e:
             end_time = time.perf_counter()
             self._last_elapsed = end_time - start_time

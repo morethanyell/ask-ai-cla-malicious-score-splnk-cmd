@@ -9,6 +9,7 @@ from splunklib.searchcommands import dispatch, StreamingCommand, Configuration, 
 # You must ensure that these client classes exist and are themselves well-structured.
 from client_openai import OpenAIGPTClient
 from client_google import GoogleGeminiClient
+from client_ollama import OllamaLocalLLMClient
 
 @Configuration()
 class CLAAiScore(StreamingCommand):
@@ -83,6 +84,12 @@ class CLAAiScore(StreamingCommand):
             return GoogleGeminiClient(
                 api_key=api_key,
                 url=api_url,
+                model=model
+            )
+        if provider == 'ollama':
+            return OllamaLocalLLMClient(
+                api_url,
+                port=11434,
                 model=model
             )
         return None
