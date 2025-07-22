@@ -88,10 +88,11 @@ class CLAAiScore(StreamingCommand):
             )
         if provider == 'ollama':
             return OllamaLocalLLMClient(
-                api_url,
-                port=11434,
-                model=model
+                model=model,
+                api_url=api_url,
+                port=11434
             )
+            
         return None
 
     def stream(self, records: Generator[Dict[str, Any], None, None]) -> Generator[Dict[str, Any], None, None]:

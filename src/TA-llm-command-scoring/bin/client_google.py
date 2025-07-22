@@ -52,6 +52,8 @@ class GoogleGeminiClient:
             return False, msg
 
         prompt_full = f'{pre_prompt}{prompt}\n```'
+        
+        url = self.url_gen()
 
         headers = {
             "Content-Type": "application/json",
@@ -67,7 +69,7 @@ class GoogleGeminiClient:
         }
 
         try:
-            url = self.url_gen()
+            
             response = requests.post(url, headers=headers, json=payload, timeout=25)
             end_time = time.perf_counter()
             self._last_elapsed = end_time - start_time

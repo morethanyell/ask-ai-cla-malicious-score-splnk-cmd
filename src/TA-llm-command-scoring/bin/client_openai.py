@@ -35,6 +35,13 @@ class OpenAIGPTClient:
     
     def get_last_elapsed_time(self):
         return self._last_elapsed
+    
+    def get_full_query_params(self):
+        return {
+            "api_key": self._mask_api_for_debug(self, self.api_key) or "n/a",
+            "api_url": self.url or "n/a",
+            "model": self.model or "n/a",
+        }
 
     def ask(self, prompt: str) -> Tuple[bool, str]:
         

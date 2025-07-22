@@ -2,16 +2,24 @@
 
 import requests
 import time
+import json
+import re
+from typing import Optional, Tuple
 from helper_preprompt import * 
 
 class OllamaLocalLLMClient:
 
     OLLAMA_URL = 'http://localhost'
 
-    def __init__(self, model=None, url=None, port=11434):
+    def __init__(
+        self,
+        model: Optional[str] = None,
+        api_url: Optional[str] = None,
+        port: Optional[int] = None,
+    ):
         self.model = model
-        self.url = url or self.OLLAMA_URL
-        self.port = port
+        self.url = api_url or self.OLLAMA_URL
+        self.port = port or 11434
         self._last_elapsed = None
     
     @staticmethod
@@ -25,9 +33,13 @@ class OllamaLocalLLMClient:
     def get_full_query_params(self):
         return {
             "model": self.model or "n/a",
-            "api_url": self.url or "n/a",
+            "api_url": self.url_gen() or "n/a",
             "api_port": self.port,
         }
+        
+    @staticmethod
+    def _remove_think_blocks(self, text):
+        return re.sub(r"<think>.*?</think>", "", text, flags=re.DOTALL)
     
     def url_gen(self):
         return f"{self.url}:{self.port}/api/chat"
@@ -49,45 +61,41 @@ class OllamaLocalLLMClient:
             )
             return False, msg
 
+        url = self.url_gen()
+        
         prompt_full = f'{pre_prompt}{prompt}\n```'
-
+        
         headers = {"Content-Type": "application/json"}
+        
         payload = {
             "model": self.model,
-            "stream": False,
-            "message": {
+            "messages": [{
                 "role": "user",
                 "content": prompt_full
-            }
+            }]
         }
 
         try:
-            url = self.url_gen()
-            response = requests.post(url, headers=headers, json=payload)
-            end_time = time.perf_counter()
-            self._last_elapsed = end_time - start_time
+
+            response = requests.post(url, headers=headers, json=payload, stream=True)
+            response_text = ""
             
-            if response.status_code == 200:
+            with requests.post(url, json=payload, stream=True) as response:
                 
-                data = response.json()
+                if response.status_code > 299:
+                    return (
+                        False,
+                        f"POST {self.url} returned an ERROR: status_code={response.status_code}, err_details={response.text}"
+                    )
                 
-                content = (
-                    data.get("choices", [{}])[0]
-                    .get("message", {})
-                    .get("content", "")
-                )
+                for line in response.iter_lines():
+                    if line:
+                        chunk = json.loads(line.decode('utf-8'))
+                        content = chunk.get("message", {}).get("content", "")
+                        response_text += content
                 
-                if content:
-                    return True, content
-                else:
-                    return False, f"Sorry, the API call was fine but Ollama::{self.model}'s response was either broken or empty."
-                
-            else:
-                error_msg = (
-                    f"POST {self.url} returned an ERROR: "
-                    f"status_code={response.status_code}, err_details={response.text}"
-                )
-                return False, error_msg
+            response_text_clean = self._remove_think_blocks(response_text)
+            return True, response_text_clean
 
         except requests.RequestException as e:
             end_time = time.perf_counter()
