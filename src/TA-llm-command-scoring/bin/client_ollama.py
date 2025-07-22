@@ -4,6 +4,7 @@ import requests
 import time
 import json
 import re
+from urllib.parse import urlparse, urlunparse
 from typing import Optional, Tuple
 from helper_preprompt import * 
 
@@ -34,7 +35,7 @@ class OllamaLocalLLMClient:
         return {
             "model": self.model or "n/a",
             "api_url": self.url_gen() or "n/a",
-            "api_port": self.port,
+            "api_port": self.port
         }
         
     @staticmethod
@@ -42,7 +43,25 @@ class OllamaLocalLLMClient:
         return re.sub(r"<think>.*?</think>", "", text, flags=re.DOTALL)
     
     def url_gen(self):
-        return f"{self.url}:{self.port}/api/chat"
+        parsed = urlparse(self.url)
+
+        # If there's already a port, we trust it's correct
+        if parsed.port:
+            return f"{self.url}/api/chat"
+        # No port in the original, append self.port if available
+        if self.port:
+            # Rebuild the netloc with the port
+            netloc = f"{parsed.hostname}:{self.port}"
+            if parsed.username and parsed.password:
+                netloc = f"{parsed.username}:{parsed.password}@{netloc}"
+            elif parsed.username:
+                netloc = f"{parsed.username}@{netloc}"
+
+            new_parsed = parsed._replace(netloc=netloc)
+            return f"{urlunparse(new_parsed)}/api/chat"
+
+        # No port and no port to add
+        return f"{self.url}/api/chat"
     
     def get_last_elapsed_time(self):
         return self._last_elapsed
@@ -80,21 +99,20 @@ class OllamaLocalLLMClient:
             response = requests.post(url, headers=headers, json=payload, stream=True)
             response_text = ""
             
-            with requests.post(url, json=payload, stream=True) as response:
+            with requests.post(url, json=payload, stream=True, timeout=(3.05, 27)) as response:
                 
                 if response.status_code > 299:
                     return (
                         False,
                         f"POST {self.url} returned an ERROR: status_code={response.status_code}, err_details={response.text}"
                     )
-                
                 for line in response.iter_lines():
                     if line:
                         chunk = json.loads(line.decode('utf-8'))
                         content = chunk.get("message", {}).get("content", "")
                         response_text += content
                 
-            response_text_clean = self._remove_think_blocks(response_text)
+            response_text_clean = self._remove_think_blocks(self, response_text)
             return True, response_text_clean
 
         except requests.RequestException as e:

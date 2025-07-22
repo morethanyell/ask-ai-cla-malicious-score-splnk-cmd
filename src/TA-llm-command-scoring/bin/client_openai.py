@@ -6,9 +6,6 @@ from typing import Optional, Tuple
 from helper_preprompt import *
 
 class OpenAIGPTClient:
-    """
-    Client for querying OpenAI GPT models, with pre-prompt integrity checking.
-    """
 
     OPENAI_API_URL = 'https://api.openai.com/v1/chat/completions'
 

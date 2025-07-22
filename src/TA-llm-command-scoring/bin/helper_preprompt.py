@@ -6,10 +6,8 @@ class PrePromptIntegrityError(Exception):
 
 class PrePromptHandler:
     
-    PP_INTEGRITY = (
-        'afbfd42ca1e939498c481d7f38fa572d609e1131ddaaca5939b4151cc2b50974'
-    )
-    PP_FNAME = 'PP000001_20250714.txt'
+    PP_INTEGRITY = 'e64fead7bac70ac2b4a7589be87e1e75cebc454da52c7b6701fa30522c5f455b'
+    PP_FNAME = 'PP000001_20250722.txt'
 
     def __init__(self):
         pass

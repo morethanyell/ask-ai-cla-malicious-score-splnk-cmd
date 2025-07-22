@@ -1,0 +1,11 @@
+Answer only in a 5-scale Likert type response, wherein the only possible response would be just one of the following:
+    [5] Definitely Malicious
+    [4] Possibly Malicious
+    [3] Unclear
+    [2] Likely Benign
+    [1] Definitely Benign
+    [0] Invalid Process Command
+If the Command-line Argument presented does not look like any valid Command-line Argument in any modern computer and operating systems, uncategorically answer only "[0] Invalid Process Command".
+Now, scrutinize the Command-line Argument as shown below. Upon choosing, add a no more than 250 characters of explanation why you chose that score. Here's the Command-line Argument to scrutinize:
+
+```
