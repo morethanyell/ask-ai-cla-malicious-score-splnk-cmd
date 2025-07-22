@@ -21,7 +21,7 @@ and a short explanation of why it chose that score. It integrates directly into 
 
 ## ⚙️ Features
 
-- 🧠 Supports both OpenAI GPT and Google Gemini (for now) to evaluate command-line arguments in real-time
+- 🧠 Supports LLM models from OpenAI, Google, and locally ran models using Ollama to evaluate command-line arguments in real-time
 - 🔐 Secure API key handling via Splunk's native credential storage
 - ⚡ Fast, streaming-compatible custom search command
 - 🔎 Customizable model, temperature, and output fields
