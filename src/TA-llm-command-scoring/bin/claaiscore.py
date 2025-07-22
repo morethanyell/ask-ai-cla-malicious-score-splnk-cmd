@@ -5,18 +5,13 @@ import re
 import json
 from typing import Generator, Dict, Any, Optional
 from splunklib.searchcommands import dispatch, StreamingCommand, Configuration, Option, validators
-
-# You must ensure that these client classes exist and are themselves well-structured.
 from client_openai import OpenAIGPTClient
 from client_google import GoogleGeminiClient
 from client_ollama import OllamaLocalLLMClient
 
 @Configuration()
 class CLAAiScore(StreamingCommand):
-    """
-    Splunk streaming command for classifying command line arguments using LLM APIs.
-    """
-
+    
     textfield = Option(
         doc='''
         **Syntax:** **textfield=***<input_field_name>*
@@ -61,7 +56,6 @@ class CLAAiScore(StreamingCommand):
 
     @staticmethod
     def safe_float(val) -> Optional[float]:
-        """Safely convert input to float; return None on failure."""
         try:
             return float(val)
         except (ValueError, TypeError):
@@ -96,9 +90,7 @@ class CLAAiScore(StreamingCommand):
         return None
 
     def stream(self, records: Generator[Dict[str, Any], None, None]) -> Generator[Dict[str, Any], None, None]:
-        """
-        The main Splunk streaming handler.
-        """
+
         api_name_key = re.sub(r'\s+', '-', self.api_name.strip())
         secrets = self.service.storage_passwords
         no_result = f"Did not find any API Key that matches: {self.api_name}"
